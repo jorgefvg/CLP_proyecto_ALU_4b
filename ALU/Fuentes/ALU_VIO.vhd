@@ -23,6 +23,18 @@ architecture ALU_VIO_arq of ALU_VIO is
     signal Remainder: std_logic_vector(3 downto 0);
     signal Carry: std_logic;
     signal Borrow: std_logic;
+    
+    -- Declaración del componente VIO
+    COMPONENT vio_0
+      PORT (
+        clk : IN STD_LOGIC;
+        probe_in0 : IN STD_LOGIC_VECTOR(7 DOWNTO 0);   -- Monitorea int_result (ahora 8 bits)
+        probe_in1 : IN STD_LOGIC;                      -- Monitorea int_carryout (ancho de 1 bit)
+        probe_out0 : OUT STD_LOGIC_VECTOR(3 DOWNTO 0); -- Controla A
+        probe_out1 : OUT STD_LOGIC_VECTOR(3 DOWNTO 0); -- Controla B
+        probe_out2 : OUT STD_LOGIC_VECTOR(1 DOWNTO 0)  -- Controla ALU_Sel
+      );
+    END COMPONENT;
 
     -- SeÃ±ales para conectar el VIO con la ALU
     signal vio_A: std_logic_vector(3 downto 0);
@@ -99,5 +111,16 @@ begin
             CarryOut <= int_carryout;
         end if;
     end process;
+    
+    -- Instancia del VIO para controlar y monitorear señales
+    vio_inst: vio_0
+        port map (
+            clk => clk,                 -- Conectar el reloj
+            probe_in0 => int_result,    -- Monitorea int_result
+            probe_in1 => int_carryout,  -- Monitorea int_carryout (debe ser de 1 bit)
+            probe_out0 => vio_A,        -- Controla A
+            probe_out1 => vio_B,        -- Controla B
+            probe_out2 => vio_ALU_Sel   -- Controla ALU_Sel
+        );
 
 end architecture ALU_VIO_arq;
